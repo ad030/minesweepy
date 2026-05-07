@@ -1,7 +1,12 @@
 #include "board.h"
 #include <stdlib.h>
 
-int **get_numbered_board(int **board, int n, int m)
+#ifndef ASSERT_H
+#define ASSERT_H
+#include <assert.h>
+#endif
+
+int **initialize_numbered_board(int **board, int n, int m)
 {
         // playerBoard tracks which squares are opened
         int **result = (int **)malloc(n * sizeof(int *));
@@ -122,31 +127,44 @@ int **initialize_mine_board(int n, int m, int x)
  * If all non-mine squares were opened, game is won and return 1.
  * If game is ongoing, return 0.
  */
-int check_victory_condition(int **mines, int **opened, int n, int m)
+int check_victory_condition(Board *board)
 {
         int i, j;
 
+        int **mines = board->mines;
+        int unopened_counter = 0;
+
         // square is opened == opened[i][j] == 1
         // mine square == mines[i][j] == 1
-        for (i = 0; i < n; i++)
+        for (i = 0; i < board->n; i++)
         {
-                for (j = 0; j < m; j++)
+                for (j = 0; j < board->m; j++)
                 {
-                        if (mines[i][j] == opened[i][j])
+                        int opened_state = board->opened[i][j];
+                        if (opened_state == 1)
                         {
                                 // mine and opened; game is lost
                                 if (mines[i][j] == 1)
                                 {
                                         return -1;
                                 }
-                                // not a mine and not opened; continue game
-                                else
+                        }
+                        else if (opened_state == 0)
+                        {
+                                if (mines[i][j] == 0)
                                 {
-                                        return 0;
+                                        unopened_counter++;
                                 }
                         }
                 }
         }
+
+        // if any unopened safe squares, continue
+        if (unopened_counter != 0)
+        {
+                return 0;
+        }
+
         // all non-mine squares opened; game is won
         return 1;
 }
@@ -155,28 +173,34 @@ int check_victory_condition(int **mines, int **opened, int n, int m)
  * After opening an empty square, open all empty squares adjacent to
  * it.
  */
-void open_empty_squares(int **mines, int **opened, int n, int m)
+void open_empty_squares(Board *board)
 {
         int i, j;
         int opened_counter = 1;
 
+        int **opened = board->opened;
+        int **numbered = board->numbered;
+
         while (opened_counter != 0)
         {
                 opened_counter = 0;
-                for (i = 0; i < n; i++)
+                for (i = 0; i < board->n; i++)
                 {
-                        for (j = 0; j < m; j++)
+                        for (j = 0; j < board->m; j++)
                         {
-                                if (opened[i][j] && mines[i][j] == 0)
+                                if (opened[i][j] && numbered[i][j] == 0)
                                 {
                                         opened_counter += open_adjacent_squares(
-                                            opened, n, m, i, j);
+                                            opened, board->n, board->m, i, j);
                                 }
                         }
                 }
         }
 }
 
+/**
+ * Open the surrounding 8 squares around square at (x, y).
+ */
 int open_adjacent_squares(int **opened, int n, int m, int x, int y)
 {
         int a, b;
@@ -204,4 +228,83 @@ int open_adjacent_squares(int **opened, int n, int m, int x, int y)
                 }
         }
         return counter;
+}
+
+/**
+ * Create and return the board struct for the game.
+ * n is number of rows.
+ * m is number of columns.
+ * x is number of mines on the board.
+ */
+Board *initialize_board(int n, int m, int x)
+{
+        assert(n >= 0 && m >= 0); // board size must not be 0
+        assert(x >= 0);           // mine count must be non-negative
+        assert(x <= n * m); // mine count must not exceed total squares on board
+
+        Board *newBoard = (Board *)malloc(sizeof(Board));
+
+        newBoard->n = n;
+        newBoard->m = m;
+        newBoard->mines = initialize_mine_board(n, m, x);
+        newBoard->opened = initialize_opened_board(n, m);
+        newBoard->numbered = initialize_numbered_board(newBoard->mines, n, m);
+
+        return newBoard;
+}
+
+/**
+ * Open the selected square (x, y) if possible.
+ * Sets flag in board->opened to 1.
+ * If opened, return 1 else return 0.
+ */
+int open_square(Board *board, int x, int y)
+{
+        assert(board != NULL);
+        assert(x >= 0 && x < board->n);
+        assert(y >= 0 && y < board->m);
+
+        int open_state = board->opened[x][y];
+
+        // can only open squares if in base state
+        // not flagged, not already opened
+        if (open_state == 0)
+        {
+                board->opened[x][y] = 1;
+                return 1;
+        }
+
+        return 0;
+}
+
+int flag_square(Board *board, int x, int y)
+{
+        assert(board != NULL);
+        assert(x >= 0 && x < board->n);
+        assert(y >= 0 && y < board->m);
+
+        // toggle between flag and base state
+        // cannot flag opened squares
+        if (board->opened[x][y] == 0)
+        {
+                board->opened[x][y] = -1;
+                return 1;
+        }
+        else if (board->opened[x][y] == -1)
+        {
+                board->opened[x][y] = 0;
+                return 1;
+        }
+
+        return 0;
+}
+
+void free_board(Board *board)
+{
+        free(board->mines);
+        free(board->opened);
+        free(board->numbered);
+        free(board);
+
+        return;
 }
