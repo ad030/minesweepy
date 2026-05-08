@@ -44,3 +44,6 @@ void display_full_board(Board *);
 void display_square(Board *, int, int);
 void display_square_hidden(Board *, int, int);
 void display_square_color(Board *, int, int);
+
+// board info
+void display_remaining_mine_count(Board *);

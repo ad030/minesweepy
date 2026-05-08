@@ -2,7 +2,7 @@ typedef struct Board {
   int n;          // length of board
   int m;          // width of board
   int mine_count; // number of mines
-  int num_flags;  // number of flags
+  int flag_count; // number of flags
   int **mines;    // tracks where mines are
   int **opened;   // tracks opened, unopened, flagged squares
   int **numbered; // for displaying results

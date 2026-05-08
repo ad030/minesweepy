@@ -38,6 +38,8 @@ void display_board_with_cursor(Board *board, int sel_x, int sel_y)
 {
         int i, j;
 
+        display_remaining_mine_count(board);
+
         for (i = 0; i < board->n; i++)
         {
                 for (j = 0; j < board->m; j++)
@@ -259,4 +261,10 @@ void display_square_color(Board *board, int x, int y)
         default:
                 break;
         }
+}
+
+void display_remaining_mine_count(Board *board)
+{
+        printw("%d mines remaining\n", board->mine_count - board->flag_count);
+        return;
 }

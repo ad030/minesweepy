@@ -230,7 +230,7 @@ Board *initialize_board(int n, int m, int x)
         newBoard->n = n;
         newBoard->m = m;
         newBoard->mine_count = x;
-        newBoard->num_flags = 0;
+        newBoard->flag_count = 0;
         newBoard->mines = initialize_mine_board(newBoard);
         newBoard->opened = initialize_opened_board(newBoard);
         newBoard->numbered = initialize_numbered_board(newBoard);
@@ -267,24 +267,24 @@ int flag_square(Board *board, int x, int y)
         assert(board != NULL);
         assert(x >= 0 && x < board->n);
         assert(y >= 0 && y < board->m);
-        assert(board->num_flags >= 0);
+        assert(board->flag_count >= 0);
 
         // toggle between flag and base state
         // cannot flag opened squares
         if (board->opened[x][y] == 0)
         {
                 board->opened[x][y] = -1;
-                board->num_flags++;
+                board->flag_count++;
                 return 1;
         }
         else if (board->opened[x][y] == -1)
         {
                 board->opened[x][y] = 0;
-                board->num_flags--;
+                board->flag_count--;
                 return 1;
         }
 
-        assert(board->num_flags >= 0);
+        assert(board->flag_count >= 0);
         return 0;
 }
 
