@@ -25,6 +25,9 @@ int handle_game_state(Board *board)
         int sel_x, sel_y;
         sel_x = sel_y = 0;
 
+        int **opened = board->opened;
+        int **numbered = board->numbered;
+
         while (ch != KEY_BACKSPACE)
         {
                 clear();
@@ -63,9 +66,20 @@ int handle_game_state(Board *board)
                         }
                         break;
                 case '\n':
-                        open_square(board, sel_x, sel_y);
+                        // chording
+                        if (opened[sel_x][sel_y] == 1 &&
+                            numbered[sel_x][sel_y] ==
+                                count_adjacent_flags(board, sel_x, sel_y))
+                        {
+                                open_adjacent_squares(board, sel_x, sel_y);
+                        }
+                        else
+                        {
 
-                        if (board->numbered[sel_x][sel_y] == 0)
+                                open_square(board, sel_x, sel_y);
+                        }
+
+                        if (numbered[sel_x][sel_y] == 0)
                         {
                                 open_empty_squares(board);
                         }
