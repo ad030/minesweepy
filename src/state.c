@@ -79,10 +79,7 @@ int handle_game_state(Board *board)
                                 open_square(board, sel_x, sel_y);
                         }
 
-                        if (numbered[sel_x][sel_y] == 0)
-                        {
-                                open_empty_squares(board);
-                        }
+                        open_empty_squares(board);
 
                         int is_won = check_victory_condition(board);
 
