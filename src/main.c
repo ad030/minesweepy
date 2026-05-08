@@ -29,7 +29,10 @@ int main(void)
         cbreak();
         keypad(stdscr, TRUE);
         noecho();
+
+        // set up ncurses colors
         start_color();
+        init_color_pairs();
 
         Board board = *initialize_board(0, 0, 0);
 
