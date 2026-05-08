@@ -6,80 +6,63 @@
 #include <assert.h>
 #endif
 
-int **initialize_numbered_board(int **board, int n, int m)
+int **initialize_numbered_board(Board *board)
 {
-        // playerBoard tracks which squares are opened
-        int **result = (int **)malloc(n * sizeof(int *));
+        assert(board != NULL);
+        assert(board->mines != NULL);
 
-        int i, j, x, y;
+        // playerBoard tracks which squares are opened
+        int **result = (int **)malloc(board->n * sizeof(int *));
+
+        int i, j;
 
         // iterate over every square in board
-        for (i = 0; i < n; i++)
+        for (i = 0; i < board->n; i++)
         {
-                result[i] = (int *)malloc(m * sizeof(int));
+                result[i] = (int *)malloc(board->m * sizeof(int));
 
-                for (j = 0; j < m; j++)
+                for (j = 0; j < board->m; j++)
                 {
                         // check if current square is a mine
-                        if (board[i][j] == 1)
+                        if (board->mines[i][j] == 1)
                         {
                                 result[i][j] = -1;
                                 continue;
                         }
 
                         // check surrounding 8 squares for mines
-                        int counter = 0;
-
-                        for (x = -1; x <= 1; x++)
-                        {
-                                for (y = -1; y <= 1; y++)
-                                {
-                                        // check for out of bounds
-                                        if (x + i < 0 || x + i >= n)
-                                        {
-                                                continue;
-                                        }
-                                        else if (j + y < 0 || j + y >= m)
-                                        {
-                                                continue;
-                                        }
-
-                                        // increment on mine
-                                        if (board[i + x][j + y] == 1)
-                                        {
-                                                counter++;
-                                        }
-                                }
-                        }
-                        result[i][j] = counter;
+                        result[i][j] = count_adjacent_mines(board, i, j);
                 }
         }
 
         return result;
 }
 
-int **initialize_opened_board(int n, int m)
+int **initialize_opened_board(Board *board)
 {
-        int **result = (int **)malloc(n * sizeof(int *));
+        assert(board != NULL);
+        assert(board->mines != NULL);
 
-        for (int i = 0; i < n; i++)
+        int **result = (int **)malloc(board->n * sizeof(int *));
+
+        for (int i = 0; i < board->n; i++)
         {
-                result[i] = (int *)calloc(m, sizeof(int));
+                result[i] = (int *)calloc(board->m, sizeof(int));
         }
 
         return result;
 }
 
-int **initialize_mine_board(int n, int m, int x)
+int **initialize_mine_board(Board *board)
 {
-        if (x < 0 || x > n * m)
-        {
-                return NULL;
-        }
-        if (n < 0 || m < 0)
-        {
-                return NULL;
-        }
+        assert(board != NULL);
+
+        int mine_count = board->mine_count;
+        int n = board->n;
+        int m = board->m;
+
+        assert(mine_count >= 0 && mine_count <= n * m);
+        assert(n >= 0 && m >= 0);
 
         int *result1d = (int *)calloc(n * m, sizeof(int));
 
@@ -88,7 +71,7 @@ int **initialize_mine_board(int n, int m, int x)
 
         // set first x elements in table to 1
         int i;
-        for (i = 0; i < x; i++)
+        for (i = 0; i < mine_count; i++)
         {
                 result1d[i] = 1;
         }
@@ -190,8 +173,8 @@ void open_empty_squares(Board *board)
                         {
                                 if (opened[i][j] && numbered[i][j] == 0)
                                 {
-                                        opened_counter += open_adjacent_squares(
-                                            opened, board->n, board->m, i, j);
+                                        opened_counter +=
+                                            open_adjacent_squares(board, i, j);
                                 }
                         }
                 }
@@ -201,7 +184,7 @@ void open_empty_squares(Board *board)
 /**
  * Open the surrounding 8 squares around square at (x, y).
  */
-int open_adjacent_squares(int **opened, int n, int m, int x, int y)
+int open_adjacent_squares(Board *board, int x, int y)
 {
         int a, b;
         int counter = 0;
@@ -209,21 +192,21 @@ int open_adjacent_squares(int **opened, int n, int m, int x, int y)
         {
                 for (b = -1; b <= 1; b++)
                 {
-                        if (x + a < 0 || x + a >= n)
+                        if (x + a < 0 || x + a >= board->n)
                         {
                                 continue;
                         }
-                        else if (y + b < 0 || y + b >= m)
+                        else if (y + b < 0 || y + b >= board->m)
                         {
                                 continue;
                         }
 
-                        int current = opened[x + a][b + y];
+                        int current = board->opened[x + a][b + y];
 
                         if (current == 0)
                         {
                                 counter++;
-                                opened[x + a][b + y] = 1;
+                                board->opened[x + a][b + y] = 1;
                         }
                 }
         }
@@ -246,11 +229,11 @@ Board *initialize_board(int n, int m, int x)
 
         newBoard->n = n;
         newBoard->m = m;
-        newBoard->num_mines = x;
+        newBoard->mine_count = x;
         newBoard->num_flags = 0;
-        newBoard->mines = initialize_mine_board(n, m, x);
-        newBoard->opened = initialize_opened_board(n, m);
-        newBoard->numbered = initialize_numbered_board(newBoard->mines, n, m);
+        newBoard->mines = initialize_mine_board(newBoard);
+        newBoard->opened = initialize_opened_board(newBoard);
+        newBoard->numbered = initialize_numbered_board(newBoard);
 
         return newBoard;
 }
@@ -313,4 +296,62 @@ void free_board(Board *board)
         free(board);
 
         return;
+}
+
+int count_adjacent_flags(Board *board, int x, int y)
+{
+        int i, j;
+        int counter = 0;
+        for (i = -1; i <= 1; i++)
+        {
+                for (j = -1; j <= 1; j++)
+                {
+                        // check for out of bounds
+                        if (x + i < 0 || x + i >= board->n)
+                        {
+                                continue;
+                        }
+                        else if (y + j < 0 || y + j >= board->m)
+                        {
+                                continue;
+                        }
+
+                        // increment on mine
+                        if (board->opened[x + i][y + j] == -1)
+                        {
+                                counter++;
+                        }
+                }
+        }
+
+        return counter;
+}
+
+int count_adjacent_mines(Board *board, int x, int y)
+{
+        int i, j;
+        int counter = 0;
+        for (i = -1; i <= 1; i++)
+        {
+                for (j = -1; j <= 1; j++)
+                {
+                        // check for out of bounds
+                        if (x + i < 0 || x + i >= board->n)
+                        {
+                                continue;
+                        }
+                        else if (y + j < 0 || y + j >= board->m)
+                        {
+                                continue;
+                        }
+
+                        // increment on mine
+                        if (board->mines[x + i][y + j] == 1)
+                        {
+                                counter++;
+                        }
+                }
+        }
+
+        return counter;
 }
