@@ -36,6 +36,13 @@ int main(void)
 
         Board board = *initialize_board(0, 0, 0);
 
+        WinStruct *win_struct = init_win_struct();
+        win_struct->height = 100;
+        win_struct->width = 100;
+
+        WINDOW *win = create_window(win_struct);
+        win = stdscr;
+
         do
         {
                 clear();
@@ -44,16 +51,16 @@ int main(void)
                 switch (game_state)
                 {
                 case MENU:
-                        game_state = handle_menu_state(&board);
+                        game_state = handle_menu_state(win, &board);
                         break;
                 case GAME:
-                        game_state = handle_game_state(&board);
+                        game_state = handle_game_state(win, &board);
                         break;
                 case WIN:
-                        game_state = handle_win_state(&board);
+                        game_state = handle_win_state(win, &board);
                         break;
                 case LOSE:
-                        game_state = handle_lose_state(&board);
+                        game_state = handle_lose_state(win, &board);
                         break;
                 case END:
                         handle_end_state(&board);

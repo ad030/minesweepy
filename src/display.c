@@ -330,8 +330,8 @@ WinStruct *init_win_struct()
                 return NULL;
         }
 
-        win->height = 5;
-        win->width = 10;
+        win->height = 10;
+        win->width = 20;
         win->startY = (LINES - win->height) / 2;
         win->startX = (COLS - win->width) / 2;
 
