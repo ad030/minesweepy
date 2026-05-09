@@ -27,12 +27,15 @@ int handle_game_state(Board *board)
 
         int **opened = board->opened;
         int **numbered = board->numbered;
+        WinStruct *win_struct = init_win_struct();
+        WINDOW *win = create_window(win_struct);
 
         while (ch != KEY_BACKSPACE)
         {
                 clear();
                 refresh();
-                display_board_with_cursor(board, sel_x, sel_y);
+                display_board_with_cursor(stdscr, board, sel_x, sel_y);
+                box(win, 0, 0);
                 ch = getch();
 
                 switch (ch)
@@ -116,7 +119,7 @@ int handle_menu_state(Board *board)
                 clear();
                 refresh();
 
-                display_menu_with_cursor(sel_x);
+                display_menu_with_cursor(stdscr, sel_x);
 
                 ch = getch();
 
@@ -176,7 +179,7 @@ void handle_end_state(Board *board)
 int handle_win_state(Board *board)
 {
         printw("You win!\n");
-        display_full_board(board);
+        display_board_with_errors(stdscr, board);
         getch();
         return MENU;
 }
@@ -184,7 +187,7 @@ int handle_win_state(Board *board)
 int handle_lose_state(Board *board)
 {
         printw("You lose...\n");
-        display_board_with_errors(board);
+        display_board_with_errors(stdscr, board);
         getch();
         return MENU;
 }

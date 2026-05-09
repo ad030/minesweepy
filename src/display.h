@@ -8,6 +8,11 @@
 #include "state.h"
 #endif
 
+#ifndef NCURSES_H
+#define NCURSES_H
+#include <ncurses.h>
+#endif
+
 // for printing full board
 #define EMPTY_SQUARE "-"
 #define HIDDEN_SQUARE "*"
@@ -31,19 +36,34 @@
 #define SEVEN_COLOR 7
 #define EIGHT_COLOR 8
 
+// struct for creating windows
+typedef struct _win_border_struct {
+  char ls, rs, ts, bs, tl, tr, bl, br;
+} WinBorder;
+
+typedef struct _win_struct {
+  int startX, startY;
+  int height, width;
+  WinBorder *border;
+} WinStruct;
+
 // ncurses color pairs
 void init_color_pairs();
 
 // menu
-void display_menu_with_cursor(int);
+void display_menu_with_cursor(WINDOW *, int);
 
 // game board
-void display_board_with_cursor(Board *, int, int);
-void display_board_with_errors(Board *);
-void display_full_board(Board *);
-void display_square(Board *, int, int);
-void display_square_hidden(Board *, int, int);
-void display_square_color(Board *, int, int);
+void display_board_with_cursor(WINDOW *, Board *, int, int);
+void display_board_with_errors(WINDOW *, Board *);
+void display_full_board(WINDOW *, Board *);
+void display_square(WINDOW *, Board *, int, int);
+void display_square_hidden(WINDOW *, Board *, int, int);
+void display_square_color(WINDOW *, Board *, int, int);
 
 // board info
-void display_remaining_mine_count(Board *);
+void display_remaining_mine_count(WINDOW *, Board *);
+
+// ncurses windows
+WINDOW *create_window(WinStruct *);
+WinStruct *init_win_struct();
