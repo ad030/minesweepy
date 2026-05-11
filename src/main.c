@@ -50,7 +50,7 @@ int main(void)
         getmaxyx(stdscr, yMax, xMax);
         printf("%d, %d\n", yMax, xMax);
 
-        Board board = *initialize_board(0, 0, 0);
+        Board board = *get_board_struct(0, 0, 0);
         WINDOW *win = stdscr;
 
         // WinStruct *win_struct = init_win_struct();
@@ -92,6 +92,5 @@ int main(void)
 
         endwin();
 
-        printf("Done\n");
         return 0;
 }
