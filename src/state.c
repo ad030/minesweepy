@@ -23,8 +23,8 @@
  */
 int handle_game_state(WINDOW *win, Board *board)
 {
-        wclear(win);
-        wrefresh(win);
+        assert(win != NULL);
+        assert(board != NULL);
 
         int ch = 0;
         int sel_x, sel_y;
@@ -36,8 +36,9 @@ int handle_game_state(WINDOW *win, Board *board)
         while (ch != KEY_BACKSPACE)
         {
                 wclear(win);
-                wrefresh(win);
                 display_board_with_cursor(win, board, sel_x, sel_y);
+                wrefresh(win);
+
                 ch = getch();
 
                 switch (ch)
@@ -110,39 +111,34 @@ int handle_game_state(WINDOW *win, Board *board)
 
 int handle_menu_state(WINDOW *win, Board *board)
 {
-        wclear(win);
-        wrefresh(win);
+        assert(win != NULL);
+        assert(board != NULL);
 
         int ch = 0;
-        int sel_x = 0;
+        int sel = 0;
 
         while (ch != KEY_BACKSPACE)
         {
                 wclear(win);
+                display_menu_with_cursor(win, sel);
                 wrefresh(win);
-
-                display_menu_with_cursor(win, sel_x);
 
                 ch = getch();
 
                 switch (ch)
                 {
                 case KEY_UP:
-                        sel_x--;
-                        if (sel_x < 0)
-                        {
-                                sel_x = 0;
-                        }
+                        sel--;
                         break;
                 case KEY_DOWN:
-                        sel_x++;
-                        if (sel_x >= NUM_MENU_OPTIONS)
-                        {
-                                sel_x = NUM_MENU_OPTIONS - 1;
-                        }
+                        sel++;
+                        // if (sel >= NUM_MENU_OPTIONS)
+                        // {
+                        //         sel = NUM_MENU_OPTIONS - 1;
+                        // }
                         break;
                 case '\n':
-                        switch (sel_x)
+                        switch (sel)
                         {
                         case 0:
                                 *board = *initialize_board(9, 9, 10);
@@ -167,6 +163,8 @@ int handle_menu_state(WINDOW *win, Board *board)
                 default:
                         break;
                 }
+                sel = ((sel % NUM_MENU_OPTIONS) + NUM_MENU_OPTIONS) %
+                      NUM_MENU_OPTIONS;
         }
 
         return END;
@@ -185,8 +183,11 @@ int handle_win_state(WINDOW *win, Board *board)
         assert(win != NULL);
         assert(board != NULL);
 
+        wclear(win);
         wprintw(win, "You win!\n");
         display_board_with_errors(win, board);
+        refresh();
+        wrefresh(win);
         getch();
         return MENU;
 }
@@ -196,8 +197,11 @@ int handle_lose_state(WINDOW *win, Board *board)
         assert(win != NULL);
         assert(board != NULL);
 
+        wclear(win);
         printw("You lose...\n");
         display_board_with_errors(win, board);
+        refresh();
+        wrefresh(win);
         getch();
         return MENU;
 }

@@ -20,12 +20,15 @@
 #include <stdlib.h>
 #endif
 
+/**
+ * Initialize color pairs for ncurses display.
+ */
 void init_color_pairs()
 {
         init_pair(CURSOR_COLOR, COLOR_BLACK, COLOR_WHITE);
         init_pair(EMPTY_COLOR, COLOR_WHITE, COLOR_BLACK);
 
-        // for displaying board after game is over
+        // displaying board after game is over
         init_pair(MINE_COLOR, COLOR_BLACK, COLOR_WHITE);
         init_pair(ERROR_COLOR, COLOR_WHITE, COLOR_RED);
         init_pair(FALSE_FLAG_COLOR, COLOR_WHITE, COLOR_BLUE);
@@ -84,7 +87,7 @@ void display_board_with_cursor(WINDOW *win, Board *board, int sel_x, int sel_y)
                                 }
                         }
                 }
-                printw("\n");
+                wprintw(win, "\n");
         }
 
         return;
@@ -99,7 +102,7 @@ void display_full_board(WINDOW *win, Board *board)
                 {
                         display_square_color(win, board, i, j);
                 }
-                printw("\n");
+                wprintw(win, "\n");
         }
 
         return;
@@ -145,7 +148,7 @@ void display_board_with_errors(WINDOW *win, Board *board)
                                 display_square_color(win, board, i, j);
                         }
                 }
-                printw("\n");
+                wprintw(win, "\n");
         }
 
         return;
@@ -155,19 +158,19 @@ void display_menu_with_cursor(WINDOW *win, int x)
 {
         assert(win != NULL);
 
-        char *options[] = {"Easy", "Intermediate", "Expert", "Quit"};
+        char *menu_options[] = {"Easy", "Intermediate", "Expert", "\nQuit"};
 
         for (int i = 0; i < NUM_MENU_OPTIONS; i++)
         {
                 if (i == x)
                 {
                         attron(COLOR_PAIR(CURSOR_COLOR));
-                        printw("%s\n", options[i]);
+                        wprintw(win, "%s\n", menu_options[i]);
                         attroff(COLOR_PAIR(CURSOR_COLOR));
                 }
                 else
                 {
-                        printw("%s\n", options[i]);
+                        wprintw(win, "%s\n", menu_options[i]);
                 }
         }
 
@@ -304,16 +307,23 @@ void display_remaining_mine_count(WINDOW *win, Board *board)
 /**
  * Create an ncurses Window based on the passed WinStruct.
  */
-WINDOW *create_window(WinStruct *win)
+WINDOW *create_window(WinStruct *win_struct)
 {
-        assert(win != NULL);
-        WINDOW *new_win =
-            newwin(win->width, win->height, win->startX, win->startY);
+        assert(win_struct != NULL);
+
+        WINDOW *new_win = newwin(win_struct->height, win_struct->width,
+                                 win_struct->startY, win_struct->startX);
 
         if (new_win == NULL)
         {
+                printf("ERROR! new win is null");
                 return NULL;
         }
+
+        WinBorder *border = win_struct->border;
+
+        wborder(new_win, border->ls, border->rs, border->ts, border->bs,
+                border->tl, border->tr, border->bl, border->br);
 
         return new_win;
 }
@@ -330,10 +340,10 @@ WinStruct *init_win_struct()
                 return NULL;
         }
 
-        win->height = 10;
-        win->width = 20;
-        win->startY = (LINES - win->height) / 2;
-        win->startX = (COLS - win->width) / 2;
+        win->height = 0;
+        win->width = 0;
+        win->startY = 0;
+        win->startX = 0;
 
         WinBorder *new_border = (WinBorder *)malloc(sizeof(WinBorder));
 

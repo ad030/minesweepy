@@ -21,6 +21,16 @@
 #include "state.h"
 #endif
 
+#ifndef STDLIB_H
+#define STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifndef TIME_H
+#define TIME_H
+#include <time.h>
+#endif
+
 int main(void)
 {
         int game_state = MENU;
@@ -28,26 +38,34 @@ int main(void)
         initscr();
         cbreak();
         keypad(stdscr, TRUE);
+        curs_set(0);
         noecho();
 
         // set up ncurses colors
         start_color();
         init_color_pairs();
 
+        // max terminal size
+        int yMax, xMax;
+        getmaxyx(stdscr, yMax, xMax);
+        printf("%d, %d\n", yMax, xMax);
+
         Board board = *initialize_board(0, 0, 0);
+        WINDOW *win = stdscr;
 
-        WinStruct *win_struct = init_win_struct();
-        win_struct->height = 100;
-        win_struct->width = 100;
+        // WinStruct *win_struct = init_win_struct();
+        // win_struct->height = yMax;
+        // win_struct->width = xMax;
+        // win_struct->startY = (LINES - win_struct->height) / 2;
+        // win_struct->startX = (COLS - win_struct->width) / 2;
+        // win = create_window(win_struct);
+        // box(win, 0, 0);
 
-        WINDOW *win = create_window(win_struct);
-        win = stdscr;
+        int seed = time(NULL);
+        srand(seed);
 
         do
         {
-                clear();
-                refresh();
-
                 switch (game_state)
                 {
                 case MENU:
