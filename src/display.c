@@ -62,30 +62,31 @@ void display_board_with_cursor(WINDOW *win, Board *board, int sel_x, int sel_y)
                 for (j = 0; j < board->m; j++)
                 {
                         int is_opened = board->opened[i][j];
-                        if (i == sel_x && j == sel_y)
+                        int is_selected = i == sel_x && j == sel_y;
+
+                        if (is_selected)
                         {
                                 attron(COLOR_PAIR(CURSOR_COLOR));
-                                if (is_opened == 1)
+                        }
+
+                        if (is_opened == 1)
+                        {
+                                assert(board->numbered != NULL);
+                                if (is_selected)
                                 {
                                         display_square(win, board, i, j);
                                 }
                                 else
                                 {
-                                        display_square_hidden(win, board, i, j);
+                                        display_square_color(win, board, i, j);
                                 }
-                                attroff(COLOR_PAIR(CURSOR_COLOR));
                         }
                         else
                         {
-                                if (is_opened == 1)
-                                {
-                                        display_square_color(win, board, i, j);
-                                }
-                                else
-                                {
-                                        display_square_hidden(win, board, i, j);
-                                }
+                                display_square_hidden(win, board, i, j);
                         }
+
+                        attroff(COLOR_PAIR(CURSOR_COLOR));
                 }
                 wprintw(win, "\n");
         }

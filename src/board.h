@@ -9,7 +9,8 @@ typedef struct Board {
 } Board;
 
 // initializing the game board
-Board *initialize_board(int, int, int);
+Board *get_board_struct(int, int, int);
+void generate_mines(Board *);
 int **initialize_mine_board(Board *);
 int **initialize_opened_board(Board *);
 int **initialize_numbered_board(Board *);

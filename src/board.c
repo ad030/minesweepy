@@ -41,7 +41,7 @@ int **initialize_numbered_board(Board *board)
 int **initialize_opened_board(Board *board)
 {
         assert(board != NULL);
-        assert(board->mines != NULL);
+        assert(board->n >= 0 && board->m >= 0);
 
         int **result = (int **)malloc(board->n * sizeof(int *));
 
@@ -56,6 +56,8 @@ int **initialize_opened_board(Board *board)
 int **initialize_mine_board(Board *board)
 {
         assert(board != NULL);
+        assert(board->n >= 0 && board->m >= 0);
+        assert(board->mine_count >= 0);
 
         int mine_count = board->mine_count;
         int n = board->n;
@@ -112,6 +114,10 @@ int **initialize_mine_board(Board *board)
  */
 int check_victory_condition(Board *board)
 {
+        assert(board != NULL);
+        assert(board->opened != NULL);
+        assert(board->mines != NULL);
+
         int i, j;
 
         int **mines = board->mines;
@@ -158,11 +164,12 @@ int check_victory_condition(Board *board)
  */
 void open_empty_squares(Board *board)
 {
+        assert(board != NULL);
+        assert(board->opened != NULL);
+        assert(board->numbered != NULL);
+
         int i, j;
         int opened_counter = 1;
-
-        int **opened = board->opened;
-        int **numbered = board->numbered;
 
         while (opened_counter != 0)
         {
@@ -171,7 +178,8 @@ void open_empty_squares(Board *board)
                 {
                         for (j = 0; j < board->m; j++)
                         {
-                                if (opened[i][j] && numbered[i][j] == 0)
+                                if (board->opened[i][j] &&
+                                    board->numbered[i][j] == 0)
                                 {
                                         opened_counter +=
                                             open_adjacent_squares(board, i, j);
@@ -179,6 +187,7 @@ void open_empty_squares(Board *board)
                         }
                 }
         }
+        return;
 }
 
 /**
@@ -186,8 +195,13 @@ void open_empty_squares(Board *board)
  */
 int open_adjacent_squares(Board *board, int x, int y)
 {
+        assert(board != NULL);
+        assert(x >= 0 && x < board->n);
+        assert(y >= 0 && y < board->m);
+
         int a, b;
         int counter = 0;
+
         for (a = -1; a <= 1; a++)
         {
                 for (b = -1; b <= 1; b++)
@@ -201,15 +215,14 @@ int open_adjacent_squares(Board *board, int x, int y)
                                 continue;
                         }
 
-                        int current = board->opened[x + a][b + y];
-
-                        if (current == 0)
+                        if (board->opened[x + a][b + y] == 0)
                         {
                                 counter++;
                                 board->opened[x + a][b + y] = 1;
                         }
                 }
         }
+
         return counter;
 }
 
@@ -218,24 +231,58 @@ int open_adjacent_squares(Board *board, int x, int y)
  * n is number of rows.
  * m is number of columns.
  * x is number of mines on the board.
+ * mines and numbered are NOT initialized yet, set to NULL.
  */
-Board *initialize_board(int n, int m, int x)
+Board *get_board_struct(int n, int m, int x)
 {
         assert(n >= 0 && m >= 0); // board size must not be 0
         assert(x >= 0);           // mine count must be non-negative
         assert(x <= n * m); // mine count must not exceed total squares on board
 
-        Board *newBoard = (Board *)malloc(sizeof(Board));
+        Board *board = (Board *)malloc(sizeof(Board));
 
-        newBoard->n = n;
-        newBoard->m = m;
-        newBoard->mine_count = x;
-        newBoard->flag_count = 0;
-        newBoard->mines = initialize_mine_board(newBoard);
-        newBoard->opened = initialize_opened_board(newBoard);
-        newBoard->numbered = initialize_numbered_board(newBoard);
+        board->n = n;
+        board->m = m;
+        board->mine_count = x;
+        board->flag_count = 0;
+        board->opened = initialize_opened_board(board);
+        board->mines = NULL;
+        board->numbered = NULL;
 
-        return newBoard;
+        generate_mines(board);
+
+        return board;
+}
+
+/**
+ * Generate mine field and number board for the given Board struct.
+ */
+void generate_mines(Board *board)
+{
+        assert(board != NULL);
+
+        if (board->mines != NULL)
+        {
+                free(board->mines);
+                board->mines = NULL;
+        }
+
+        if (board->numbered != NULL)
+        {
+                free(board->numbered);
+                board->numbered = NULL;
+        }
+
+        assert(board->mines == NULL);
+        assert(board->numbered == NULL);
+
+        board->mines = initialize_mine_board(board);
+        board->numbered = initialize_numbered_board(board);
+
+        assert(board->mines != NULL);
+        assert(board->numbered != NULL);
+
+        return;
 }
 
 /**
@@ -269,30 +316,35 @@ int flag_square(Board *board, int x, int y)
         assert(y >= 0 && y < board->m);
         assert(board->flag_count >= 0);
 
+        int success = 0;
+
         // toggle between flag and base state
         // cannot flag opened squares
         if (board->opened[x][y] == 0)
         {
                 board->opened[x][y] = -1;
                 board->flag_count++;
-                return 1;
+                success = 1;
         }
         else if (board->opened[x][y] == -1)
         {
                 board->opened[x][y] = 0;
                 board->flag_count--;
-                return 1;
+                success = 1;
         }
 
         assert(board->flag_count >= 0);
-        return 0;
+
+        return success;
 }
 
 void free_board(Board *board)
 {
+        assert(board != NULL);
+
+        free(board->numbered);
         free(board->mines);
         free(board->opened);
-        free(board->numbered);
         free(board);
 
         return;
@@ -300,8 +352,13 @@ void free_board(Board *board)
 
 int count_adjacent_flags(Board *board, int x, int y)
 {
+        assert(board != NULL);
+        assert(x >= 0 && x < board->n);
+        assert(y >= 0 && x < board->m);
+
         int i, j;
         int counter = 0;
+
         for (i = -1; i <= 1; i++)
         {
                 for (j = -1; j <= 1; j++)
@@ -316,7 +373,7 @@ int count_adjacent_flags(Board *board, int x, int y)
                                 continue;
                         }
 
-                        // increment on mine
+                        // increment on flag
                         if (board->opened[x + i][y + j] == -1)
                         {
                                 counter++;
@@ -329,6 +386,10 @@ int count_adjacent_flags(Board *board, int x, int y)
 
 int count_adjacent_mines(Board *board, int x, int y)
 {
+        assert(board != NULL);
+        assert(x >= 0 && x < board->n);
+        assert(y >= 0 && x < board->m);
+
         int i, j;
         int counter = 0;
         for (i = -1; i <= 1; i++)

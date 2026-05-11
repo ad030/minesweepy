@@ -30,8 +30,7 @@ int handle_game_state(WINDOW *win, Board *board)
         int sel_x, sel_y;
         sel_x = sel_y = 0;
 
-        int **opened = board->opened;
-        int **numbered = board->numbered;
+        int is_first_square = 1;
 
         while (ch != KEY_BACKSPACE)
         {
@@ -49,6 +48,7 @@ int handle_game_state(WINDOW *win, Board *board)
                         {
                                 sel_x = 0;
                         }
+                        assert(sel_x >= 0 && sel_x < board->n);
                         break;
                 case KEY_DOWN:
                         sel_x++;
@@ -56,6 +56,7 @@ int handle_game_state(WINDOW *win, Board *board)
                         {
                                 sel_x = board->n - 1;
                         }
+                        assert(sel_x >= 0 && sel_x < board->n);
                         break;
                 case KEY_LEFT:
                         sel_y--;
@@ -63,6 +64,7 @@ int handle_game_state(WINDOW *win, Board *board)
                         {
                                 sel_y = 0;
                         }
+                        assert(sel_y >= 0 && sel_y < board->m);
                         break;
                 case KEY_RIGHT:
                         sel_y++;
@@ -70,18 +72,35 @@ int handle_game_state(WINDOW *win, Board *board)
                         {
                                 sel_y = board->m - 1;
                         }
+                        assert(sel_y >= 0 && sel_y < board->m);
                         break;
                 case '\n':
+                        // first click safety
+                        // give player empty space on first click of board
+                        // repeat until selected square has 0 mines surrounding
+                        if (is_first_square == 1)
+                        {
+                                while (board->numbered[sel_x][sel_y] != 0)
+                                {
+                                        generate_mines(board);
+                                }
+
+                                is_first_square = 0;
+                        }
+
+                        assert(is_first_square == 0);
+                        assert(board->mines != NULL);
+                        assert(board->numbered != NULL);
+
                         // chording
-                        if (opened[sel_x][sel_y] == 1 &&
-                            numbered[sel_x][sel_y] ==
+                        if (board->opened[sel_x][sel_y] == 1 &&
+                            board->numbered[sel_x][sel_y] ==
                                 count_adjacent_flags(board, sel_x, sel_y))
                         {
                                 open_adjacent_squares(board, sel_x, sel_y);
                         }
                         else
                         {
-
                                 open_square(board, sel_x, sel_y);
                         }
 
@@ -141,15 +160,15 @@ int handle_menu_state(WINDOW *win, Board *board)
                         switch (sel)
                         {
                         case 0:
-                                *board = *initialize_board(9, 9, 10);
+                                *board = *get_board_struct(9, 9, 10);
                                 return GAME;
                                 break;
                         case 1:
-                                *board = *initialize_board(16, 16, 40);
+                                *board = *get_board_struct(16, 16, 40);
                                 return GAME;
                                 break;
                         case 2:
-                                *board = *initialize_board(16, 30, 99);
+                                *board = *get_board_struct(16, 30, 99);
                                 return GAME;
                                 break;
                         case 3:
