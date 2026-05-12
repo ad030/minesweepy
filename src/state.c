@@ -43,6 +43,8 @@ int handle_game_state(WINDOW *win, Board *board)
                 switch (ch)
                 {
                 case KEY_UP:
+                case 'k':
+                case 'w':
                         sel_x--;
                         if (sel_x < 0)
                         {
@@ -51,6 +53,8 @@ int handle_game_state(WINDOW *win, Board *board)
                         assert(sel_x >= 0 && sel_x < board->n);
                         break;
                 case KEY_DOWN:
+                case 'j':
+                case 's':
                         sel_x++;
                         if (sel_x >= board->n)
                         {
@@ -59,6 +63,8 @@ int handle_game_state(WINDOW *win, Board *board)
                         assert(sel_x >= 0 && sel_x < board->n);
                         break;
                 case KEY_LEFT:
+                case 'h':
+                case 'a':
                         sel_y--;
                         if (sel_y < 0)
                         {
@@ -67,6 +73,8 @@ int handle_game_state(WINDOW *win, Board *board)
                         assert(sel_y >= 0 && sel_y < board->m);
                         break;
                 case KEY_RIGHT:
+                case 'l':
+                case 'd':
                         sel_y++;
                         if (sel_y >= board->m)
                         {
@@ -118,6 +126,7 @@ int handle_game_state(WINDOW *win, Board *board)
                         }
                         break;
                 case ' ':
+                case 'f':
                         flag_square(board, sel_x, sel_y);
                         break;
                 default:
