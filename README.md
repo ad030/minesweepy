@@ -2,6 +2,10 @@
 
 Personal project for fun. Minesweeper created in C using ncurses.
 
+## Dependencies
+
+- `ncurses`
+
 ## Running the Game
 
 1. Clone the repository and enter the directory.
