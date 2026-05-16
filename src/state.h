@@ -1,9 +1,10 @@
-#include "board.h"
-
-#include <ncurses.h>
 
 #ifndef STATE_H
 #define STATE_H
+
+#include "board.h"
+#include <ncurses.h>
+
 #define NUM_MENU_OPTIONS 4
 
 enum State { MENU, GAME, WIN, LOSE, END };

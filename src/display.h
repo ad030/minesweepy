@@ -1,11 +1,10 @@
-#include "board.h"
+#ifndef DISPLAY_H
+#define DISPLAY_H
 
+#include "board.h"
 #include "state.h"
 
 #include <ncurses.h>
-
-#ifndef DISPLAY_H
-#define DISPLAY_H
 
 // for printing full board
 #define EMPTY_SQUARE "-"
