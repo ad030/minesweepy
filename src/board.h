@@ -1,3 +1,6 @@
+#ifndef BOARD_H
+#define BOARD_H
+
 typedef struct Board {
   int n;          // length of board
   int m;          // width of board
@@ -24,3 +27,5 @@ int count_adjacent_mines(Board *, int, int);
 
 int open_square(Board *, int, int);
 int flag_square(Board *, int, int);
+
+#endif

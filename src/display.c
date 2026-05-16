@@ -1,24 +1,9 @@
 #include "display.h"
-
-#ifndef BOARD_H
-#define BOARD_H
 #include "board.h"
-#endif
 
-#ifndef NCURSES_H
-#define NCURSES_H
-#include <ncurses.h>
-#endif
-
-#ifndef ASSERT_H
-#define ASSERT_H
 #include <assert.h>
-#endif
-
-#ifndef STDLIB_H
-#define STDLIB_H
+#include <ncurses.h>
 #include <stdlib.h>
-#endif
 
 /**
  * Initialize color pairs for ncurses display.

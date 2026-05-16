@@ -1,17 +1,11 @@
-#ifndef BOARD_H
-#define BOARD_H
 #include "board.h"
-#endif
 
-#ifndef STATE_H
-#define STATE_H
 #include "state.h"
-#endif
 
-#ifndef NCURSES_H
-#define NCURSES_H
 #include <ncurses.h>
-#endif
+
+#ifndef DISPLAY_H
+#define DISPLAY_H
 
 // for printing full board
 #define EMPTY_SQUARE "-"
@@ -67,3 +61,5 @@ void display_remaining_mine_count(WINDOW *, Board *);
 // ncurses windows
 WINDOW *create_window(WinStruct *);
 WinStruct *init_win_struct();
+
+#endif

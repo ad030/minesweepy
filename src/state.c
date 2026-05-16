@@ -1,22 +1,8 @@
-#ifndef STATE_H
-#define STATE_H
 #include "state.h"
-#endif
-
-#ifndef DISPLAY_H
-#define DISPLAY_H
 #include "display.h"
-#endif
 
-#ifndef NCURSES_H
-#define NCURSES_H
-#include <ncurses.h>
-#endif
-
-#ifndef ASSERT_H
-#define ASSERT_H
 #include <assert.h>
-#endif
+#include <ncurses.h>
 
 /**
  * Return either win or lose state

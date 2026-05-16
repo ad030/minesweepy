@@ -1,35 +1,12 @@
-#ifndef BOARD_H
-#define BOARD_H
 #include "board.h"
-#endif
-
 #include "display.h"
-#include <stdio.h>
-
-#ifndef NCURSES_H
-#define NCURSES_H
-#include <ncurses.h>
-#endif
-
-#ifndef ASSERT_H
-#define ASSERT_H
-#include <assert.h>
-#endif
-
-#ifndef STATE_H
-#define STATE_H
 #include "state.h"
-#endif
 
-#ifndef STDLIB_H
-#define STDLIB_H
+#include <assert.h>
+#include <ncurses.h>
+#include <stdio.h>
 #include <stdlib.h>
-#endif
-
-#ifndef TIME_H
-#define TIME_H
 #include <time.h>
-#endif
 
 int main(void)
 {
