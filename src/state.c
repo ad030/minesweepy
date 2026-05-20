@@ -142,9 +142,13 @@ int handle_menu_state(WINDOW *win, Board *board)
                 switch (ch)
                 {
                 case KEY_UP:
+                case 'w':
+                case 'k':
                         sel--;
                         break;
                 case KEY_DOWN:
+                case 's':
+                case 'j':
                         sel++;
                         // if (sel >= NUM_MENU_OPTIONS)
                         // {
