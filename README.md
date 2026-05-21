@@ -23,3 +23,4 @@ git clone https://github.com/ad030/minesweepy && cd ./minesweepy
 - WASD, HJKL (vim style), arrow keys: Navigate menu and board
 - Enter: Select item in menu, open square (chording if opening empty square)
 - Space, F: Flag selected square
+- Backspace: Exit program immediately
