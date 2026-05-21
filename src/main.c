@@ -27,8 +27,7 @@ int main(void)
         getmaxyx(stdscr, yMax, xMax);
         printf("%d, %d\n", yMax, xMax);
 
-        Board board = *get_board_struct(0, 0, 0);
-        WINDOW *win = stdscr;
+        GlobalState *glob = init_global_state_struct();
 
         // WinStruct *win_struct = init_win_struct();
         // win_struct->height = yMax;
@@ -41,29 +40,33 @@ int main(void)
         int seed = time(NULL);
         srand(seed);
 
+        // for state handl;ing
+        int (*handle_state)(GlobalState *);
+
         do
         {
                 switch (game_state)
                 {
                 case MENU:
-                        game_state = handle_menu_state(win, &board);
+                        handle_state = handle_menu_state;
                         break;
                 case GAME:
-                        game_state = handle_game_state(win, &board);
+                        handle_state = handle_game_state;
                         break;
                 case WIN:
-                        game_state = handle_win_state(win, &board);
+                        handle_state = handle_win_state;
                         break;
                 case LOSE:
-                        game_state = handle_lose_state(win, &board);
+                        handle_state = handle_lose_state;
                         break;
                 case END:
-                        handle_end_state(&board);
+                        handle_state = handle_end_state;
                         break;
                 default:
-                        game_state = END;
                         break;
                 }
+
+                game_state = handle_state(glob);
 
         } while (game_state != END);
 

@@ -1,4 +1,3 @@
-
 #ifndef STATE_H
 #define STATE_H
 
@@ -7,12 +6,19 @@
 
 #define NUM_MENU_OPTIONS 4
 
-enum State { MENU, GAME, WIN, LOSE, END };
+enum GameState { MENU, GAME, WIN, LOSE, END };
 
-int handle_menu_state(WINDOW *, Board *);
-int handle_game_state(WINDOW *, Board *);
-int handle_win_state(WINDOW *, Board *);
-int handle_lose_state(WINDOW *, Board *);
-void handle_end_state(Board *);
+typedef struct game_state {
+  enum GameState current_state;
+  Board *board;
+} GlobalState;
+
+GlobalState *init_global_state_struct();
+
+int handle_menu_state(GlobalState *glob);
+int handle_game_state(GlobalState *glob);
+int handle_win_state(GlobalState *glob);
+int handle_lose_state(GlobalState *glob);
+int handle_end_state(GlobalState *glob);
 
 #endif
