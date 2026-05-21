@@ -1,2 +1,4 @@
+# build artifacts
 minesweepy
-*.o
+build/*.o
+
