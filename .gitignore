@@ -1,4 +1,5 @@
 # build artifacts
-minesweepy
+*.out
 build/*.o
+build/*.d
 

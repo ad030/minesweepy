@@ -6,11 +6,19 @@
 #include <ncurses.h>
 #include <stdlib.h>
 
+void init_global_state_struct(GlobalState *glob) {
+        glob->current_state = MENU;
+        initialize_board_struct(glob->board, 0, 0, 0);
+
+        return;
+}
+
+void state_machine(GlobalState *glob) { return; };
+
 /**
  * Return either win or lose state
  */
-int handle_game_state(GlobalState *glob)
-{
+int handle_game_state(GlobalState *glob) {
         assert(glob != NULL);
         assert(glob->board != NULL);
 
@@ -21,16 +29,14 @@ int handle_game_state(GlobalState *glob)
         int is_first_square = 1;
         WINDOW *win = stdscr;
 
-        while (ch != KEY_BACKSPACE)
-        {
+        while (ch != KEY_BACKSPACE) {
                 wclear(win);
                 display_board_with_cursor(win, glob->board, sel_x, sel_y);
                 wrefresh(win);
 
                 ch = getch();
 
-                switch (ch)
-                {
+                switch (ch) {
                 case KEY_UP:
                 case 'k':
                 case 'w':
@@ -53,8 +59,7 @@ int handle_game_state(GlobalState *glob)
                 case 'h':
                 case 'a':
                         sel_y--;
-                        if (sel_y < 0)
-                        {
+                        if (sel_y < 0) {
                                 sel_y = 0;
                         }
                         assert(sel_y >= 0 && sel_y < glob->board->m);
@@ -72,8 +77,7 @@ int handle_game_state(GlobalState *glob)
                         // first click safety
                         // give player empty space on first click of board
                         // repeat until selected square has 0 mines surrounding
-                        if (is_first_square == 1)
-                        {
+                        if (is_first_square == 1) {
                                 while (glob->board->numbered[sel_x][sel_y] != 0)
                                         generate_mines(glob->board);
 
@@ -87,13 +91,11 @@ int handle_game_state(GlobalState *glob)
                         // chording
                         if (glob->board->opened[sel_x][sel_y] == 1 &&
                             glob->board->numbered[sel_x][sel_y] ==
-                                count_adjacent_flags(glob->board, sel_x, sel_y))
-                        {
+                                count_adjacent_flags(glob->board, sel_x,
+                                                     sel_y)) {
                                 open_adjacent_squares(glob->board, sel_x,
                                                       sel_y);
-                        }
-                        else
-                        {
+                        } else {
                                 open_square(glob->board, sel_x, sel_y);
                         }
 
@@ -101,12 +103,9 @@ int handle_game_state(GlobalState *glob)
 
                         int is_won = check_victory_condition(glob->board);
 
-                        if (is_won == 1)
-                        {
+                        if (is_won == 1) {
                                 return WIN;
-                        }
-                        else if (is_won == -1)
-                        {
+                        } else if (is_won == -1) {
                                 return LOSE;
                         }
                         break;
@@ -122,8 +121,7 @@ int handle_game_state(GlobalState *glob)
         return END;
 }
 
-int handle_menu_state(GlobalState *glob)
-{
+int handle_menu_state(GlobalState *glob) {
         assert(glob != NULL);
         assert(glob->board != NULL);
 
@@ -132,16 +130,14 @@ int handle_menu_state(GlobalState *glob)
 
         WINDOW *win = stdscr;
 
-        while (ch != KEY_BACKSPACE)
-        {
+        while (ch != KEY_BACKSPACE) {
                 wclear(win);
                 display_menu_with_cursor(win, sel);
                 wrefresh(win);
 
                 ch = getch();
 
-                switch (ch)
-                {
+                switch (ch) {
                 case KEY_UP:
                 case 'w':
                 case 'k':
@@ -161,8 +157,7 @@ int handle_menu_state(GlobalState *glob)
                         if (glob->board != NULL)
                                 free_board(glob->board);
 
-                        switch (sel)
-                        {
+                        switch (sel) {
                         case 0:
                                 glob->board = get_board_struct(9, 9, 10);
                                 return GAME;
@@ -193,8 +188,7 @@ int handle_menu_state(GlobalState *glob)
         return END;
 }
 
-int handle_end_state(GlobalState *glob)
-{
+int handle_end_state(GlobalState *glob) {
         assert(glob != NULL);
         assert(glob->board != NULL);
 
@@ -204,8 +198,7 @@ int handle_end_state(GlobalState *glob)
         return 0;
 }
 
-int handle_win_state(GlobalState *glob)
-{
+int handle_win_state(GlobalState *glob) {
         assert(glob != NULL);
         assert(glob->board != NULL);
 
@@ -220,8 +213,7 @@ int handle_win_state(GlobalState *glob)
         return MENU;
 }
 
-int handle_lose_state(GlobalState *glob)
-{
+int handle_lose_state(GlobalState *glob) {
         assert(glob != NULL);
         assert(glob->board != NULL);
 
@@ -234,17 +226,4 @@ int handle_lose_state(GlobalState *glob)
         wrefresh(win);
         getch();
         return MENU;
-}
-
-GlobalState *init_global_state_struct()
-{
-        GlobalState *glob = (GlobalState *)malloc(sizeof(GlobalState));
-
-        if (glob == NULL)
-                return NULL;
-
-        glob->current_state = MENU;
-        glob->board = get_board_struct(0, 0, 0);
-
-        return glob;
 }

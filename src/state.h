@@ -9,11 +9,11 @@
 enum GameState { MENU, GAME, WIN, LOSE, END };
 
 typedef struct game_state {
-  enum GameState current_state;
-  Board *board;
+        enum GameState current_state;
+        Board *board;
 } GlobalState;
 
-GlobalState *init_global_state_struct();
+void init_global_state_struct(GlobalState *glob);
 
 int handle_menu_state(GlobalState *glob);
 int handle_game_state(GlobalState *glob);

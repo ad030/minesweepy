@@ -8,8 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-int main(void)
-{
+int main(void) {
         int game_state = MENU;
 
         initscr();
@@ -23,11 +22,12 @@ int main(void)
         init_color_pairs();
 
         // max terminal size
-        int yMax, xMax;
-        getmaxyx(stdscr, yMax, xMax);
-        printf("%d, %d\n", yMax, xMax);
+        // int yMax, xMax;
+        // getmaxyx(stdscr, yMax, xMax);
+        // printf("%d, %d\n", yMax, xMax);
 
-        GlobalState *glob = init_global_state_struct();
+        GlobalState glob;
+        init_global_state_struct(&glob);
 
         // WinStruct *win_struct = init_win_struct();
         // win_struct->height = yMax;
@@ -40,13 +40,11 @@ int main(void)
         int seed = time(NULL);
         srand(seed);
 
-        // for state handl;ing
+        // for state handling
         int (*handle_state)(GlobalState *);
 
-        do
-        {
-                switch (game_state)
-                {
+        do {
+                switch (game_state) {
                 case MENU:
                         handle_state = handle_menu_state;
                         break;
