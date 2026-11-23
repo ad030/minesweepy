@@ -5,11 +5,22 @@
 #include <ncurses.h>
 #include <stdlib.h>
 
+void init_ncurses() {
+        initscr();
+        cbreak();
+        keypad(stdscr, TRUE);
+        curs_set(0);
+        noecho();
+
+        // set up ncurses colors
+        start_color();
+        init_color_pairs();
+}
+
 /**
  * Initialize color pairs for ncurses display.
  */
-void init_color_pairs()
-{
+void init_color_pairs() {
         init_pair(CURSOR_COLOR, COLOR_BLACK, COLOR_WHITE);
         init_pair(EMPTY_COLOR, COLOR_WHITE, COLOR_BLACK);
 
@@ -31,8 +42,8 @@ void init_color_pairs()
         init_pair(EIGHT_COLOR, COLOR_CYAN, COLOR_BLACK);
 }
 
-void display_board_with_cursor(WINDOW *win, Board *board, int sel_x, int sel_y)
-{
+void display_board_with_cursor(WINDOW *win, Board *board, int sel_x,
+                               int sel_y) {
         assert(win != NULL);
         assert(board != NULL);
         assert(sel_x >= 0 && sel_x < board->n);
@@ -42,32 +53,23 @@ void display_board_with_cursor(WINDOW *win, Board *board, int sel_x, int sel_y)
 
         display_remaining_mine_count(win, board);
 
-        for (i = 0; i < board->n; i++)
-        {
-                for (j = 0; j < board->m; j++)
-                {
+        for (i = 0; i < board->n; i++) {
+                for (j = 0; j < board->m; j++) {
                         int is_opened = board->opened[i][j];
                         int is_selected = i == sel_x && j == sel_y;
 
-                        if (is_selected)
-                        {
+                        if (is_selected) {
                                 attron(COLOR_PAIR(CURSOR_COLOR));
                         }
 
-                        if (is_opened == 1)
-                        {
+                        if (is_opened == 1) {
                                 assert(board->numbered != NULL);
-                                if (is_selected)
-                                {
+                                if (is_selected) {
                                         display_square(win, board, i, j);
-                                }
-                                else
-                                {
+                                } else {
                                         display_square_color(win, board, i, j);
                                 }
-                        }
-                        else
-                        {
+                        } else {
                                 display_square_hidden(win, board, i, j);
                         }
 
@@ -79,13 +81,10 @@ void display_board_with_cursor(WINDOW *win, Board *board, int sel_x, int sel_y)
         return;
 }
 
-void display_full_board(WINDOW *win, Board *board)
-{
+void display_full_board(WINDOW *win, Board *board) {
         int i, j;
-        for (i = 0; i < board->n; i++)
-        {
-                for (j = 0; j < board->m; j++)
-                {
+        for (i = 0; i < board->n; i++) {
+                for (j = 0; j < board->m; j++) {
                         display_square_color(win, board, i, j);
                 }
                 wprintw(win, "\n");
@@ -94,43 +93,32 @@ void display_full_board(WINDOW *win, Board *board)
         return;
 }
 
-void display_board_with_errors(WINDOW *win, Board *board)
-{
+void display_board_with_errors(WINDOW *win, Board *board) {
         assert(win != NULL);
         assert(board != NULL);
 
         int i, j, is_mine, opened_state;
 
-        for (i = 0; i < board->n; i++)
-        {
-                for (j = 0; j < board->m; j++)
-                {
+        for (i = 0; i < board->n; i++) {
+                for (j = 0; j < board->m; j++) {
                         is_mine = board->mines[i][j];
                         opened_state = board->opened[i][j];
 
-                        if (is_mine == 1)
-                        {
-                                if (opened_state == 1)
-                                {
+                        if (is_mine == 1) {
+                                if (opened_state == 1) {
                                         attron(COLOR_PAIR(ERROR_COLOR));
                                         display_square(win, board, i, j);
                                         attroff(COLOR_PAIR(ERROR_COLOR));
-                                }
-                                else
-                                {
+                                } else {
                                         attron(COLOR_PAIR(MINE_COLOR));
                                         display_square(win, board, i, j);
                                         attroff(COLOR_PAIR(MINE_COLOR));
                                 }
-                        }
-                        else if (is_mine == 0 && opened_state == -1)
-                        {
+                        } else if (is_mine == 0 && opened_state == -1) {
                                 attron(COLOR_PAIR(FALSE_FLAG_COLOR));
                                 display_square(win, board, i, j);
                                 attroff(COLOR_PAIR(FALSE_FLAG_COLOR));
-                        }
-                        else
-                        {
+                        } else {
                                 display_square_color(win, board, i, j);
                         }
                 }
@@ -140,22 +128,17 @@ void display_board_with_errors(WINDOW *win, Board *board)
         return;
 }
 
-void display_menu_with_cursor(WINDOW *win, int x)
-{
+void display_menu_with_cursor(WINDOW *win, int x) {
         assert(win != NULL);
 
         char *menu_options[] = {"Easy", "Intermediate", "Expert", "\nQuit"};
 
-        for (int i = 0; i < NUM_MENU_OPTIONS; i++)
-        {
-                if (i == x)
-                {
+        for (int i = 0; i < NUM_MENU_OPTIONS; i++) {
+                if (i == x) {
                         attron(COLOR_PAIR(CURSOR_COLOR));
                         wprintw(win, "%s\n", menu_options[i]);
                         attroff(COLOR_PAIR(CURSOR_COLOR));
-                }
-                else
-                {
+                } else {
                         wprintw(win, "%s\n", menu_options[i]);
                 }
         }
@@ -167,23 +150,17 @@ void display_menu_with_cursor(WINDOW *win, int x)
  * Display true value of square without any colours.
  * Mines and empty squares are replaced with their corresponding character.
  */
-void display_square(WINDOW *win, Board *board, int x, int y)
-{
+void display_square(WINDOW *win, Board *board, int x, int y) {
         assert(win != NULL);
         assert(board != NULL);
 
         int square_num = board->numbered[x][y];
 
-        if (square_num == -1)
-        {
+        if (square_num == -1) {
                 wprintw(win, " %s ", MINE_SQUARE);
-        }
-        else if (square_num == 0)
-        {
+        } else if (square_num == 0) {
                 wprintw(win, " %s ", EMPTY_SQUARE);
-        }
-        else
-        {
+        } else {
                 wprintw(win, " %d ", square_num);
         }
 }
@@ -192,23 +169,17 @@ void display_square(WINDOW *win, Board *board, int x, int y)
  * Display square without colors
  * Hidden or flagged squares are displayed as such.
  */
-void display_square_hidden(WINDOW *win, Board *board, int x, int y)
-{
+void display_square_hidden(WINDOW *win, Board *board, int x, int y) {
         assert(win != NULL);
         assert(board != NULL);
 
         int is_opened = board->opened[x][y];
 
-        if (is_opened == -1)
-        {
+        if (is_opened == -1) {
                 wprintw(win, " %s ", FLAGGED_SQUARE);
-        }
-        else if (is_opened == 0)
-        {
+        } else if (is_opened == 0) {
                 wprintw(win, " %s ", HIDDEN_SQUARE);
-        }
-        else
-        {
+        } else {
                 display_square(win, board, x, y);
         }
 }
@@ -216,15 +187,13 @@ void display_square_hidden(WINDOW *win, Board *board, int x, int y)
 /**
  * Display square with all colours for numbers.
  */
-void display_square_color(WINDOW *win, Board *board, int x, int y)
-{
+void display_square_color(WINDOW *win, Board *board, int x, int y) {
         assert(win != NULL);
         assert(board != NULL);
 
         int square_num = board->numbered[x][y];
 
-        switch (square_num)
-        {
+        switch (square_num) {
         case 0:
                 attron(COLOR_PAIR(EMPTY_SQUARE));
                 display_square(win, board, x, y);
@@ -280,8 +249,7 @@ void display_square_color(WINDOW *win, Board *board, int x, int y)
         }
 }
 
-void display_remaining_mine_count(WINDOW *win, Board *board)
-{
+void display_remaining_mine_count(WINDOW *win, Board *board) {
         assert(win != NULL);
         assert(board != NULL);
 
@@ -293,15 +261,13 @@ void display_remaining_mine_count(WINDOW *win, Board *board)
 /**
  * Create an ncurses Window based on the passed WinStruct.
  */
-WINDOW *create_window(WinStruct *win_struct)
-{
+WINDOW *create_window(WinStruct *win_struct) {
         assert(win_struct != NULL);
 
         WINDOW *new_win = newwin(win_struct->height, win_struct->width,
                                  win_struct->startY, win_struct->startX);
 
-        if (new_win == NULL)
-        {
+        if (new_win == NULL) {
                 printf("ERROR! new win is null");
                 return NULL;
         }
@@ -317,12 +283,10 @@ WINDOW *create_window(WinStruct *win_struct)
 /**
  * Initialize a WinStruct with default parameters.
  */
-WinStruct *init_win_struct()
-{
+WinStruct *init_win_struct() {
         WinStruct *win = (WinStruct *)malloc(sizeof(WinStruct));
 
-        if (win == NULL)
-        {
+        if (win == NULL) {
                 return NULL;
         }
 
@@ -333,8 +297,7 @@ WinStruct *init_win_struct()
 
         WinBorder *new_border = (WinBorder *)malloc(sizeof(WinBorder));
 
-        if (new_border == NULL)
-        {
+        if (new_border == NULL) {
                 return NULL;
         }
 

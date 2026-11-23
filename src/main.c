@@ -9,66 +9,15 @@
 #include <time.h>
 
 int main(void) {
-        int game_state = MENU;
-
-        initscr();
-        cbreak();
-        keypad(stdscr, TRUE);
-        curs_set(0);
-        noecho();
-
-        // set up ncurses colors
-        start_color();
-        init_color_pairs();
-
-        // max terminal size
-        // int yMax, xMax;
-        // getmaxyx(stdscr, yMax, xMax);
-        // printf("%d, %d\n", yMax, xMax);
+        init_ncurses();
 
         GlobalState glob;
         init_global_state_struct(&glob);
 
-        // WinStruct *win_struct = init_win_struct();
-        // win_struct->height = yMax;
-        // win_struct->width = xMax;
-        // win_struct->startY = (LINES - win_struct->height) / 2;
-        // win_struct->startX = (COLS - win_struct->width) / 2;
-        // win = create_window(win_struct);
-        // box(win, 0, 0);
-
         int seed = time(NULL);
         srand(seed);
 
-        // for state handling
-        int (*handle_state)(GlobalState *);
-
-        do {
-                switch (game_state) {
-                case MENU:
-                        handle_state = handle_menu_state;
-                        break;
-                case GAME:
-                        handle_state = handle_game_state;
-                        break;
-                case WIN:
-                        handle_state = handle_win_state;
-                        break;
-                case LOSE:
-                        handle_state = handle_lose_state;
-                        break;
-                case END:
-                        handle_state = handle_end_state;
-                        break;
-                default:
-                        break;
-                }
-
-                game_state = handle_state(glob);
-
-        } while (game_state != END);
-
-        endwin();
+        state_machine(&glob);
 
         return 0;
 }

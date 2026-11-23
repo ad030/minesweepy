@@ -31,17 +31,20 @@
 
 // struct for creating windows
 typedef struct _win_border_struct {
-  char ls, rs, ts, bs, tl, tr, bl, br;
+        char ls, rs, ts, bs, tl, tr, bl, br;
 } WinBorder;
 
 typedef struct _win_struct {
-  int startX, startY;
-  int height, width;
-  WinBorder *border;
+        int startX, startY;
+        int height, width;
+        WinBorder *border;
 } WinStruct;
 
+// set up ncurses
+void init_ncurses(void);
+
 // ncurses color pairs
-void init_color_pairs();
+void init_color_pairs(void);
 
 // menu
 void display_menu_with_cursor(WINDOW *, int);

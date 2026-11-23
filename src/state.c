@@ -8,30 +8,56 @@
 
 void init_global_state_struct(GlobalState *glob) {
         glob->current_state = MENU;
-        initialize_board_struct(glob->board, 0, 0, 0);
+        glob->win = stdscr;
+        initialize_board_struct(&(glob->board), 0, 0, 0);
 
         return;
 }
 
-void state_machine(GlobalState *glob) { return; };
+void state_machine(GlobalState *glob) {
+        while (glob->current_state != END) {
+                switch (glob->current_state) {
+                case MENU:
+                        // printf("menu state\n");
+                        handle_menu_state(glob);
+                        break;
+                case GAME:
+                        // printf("game state\n");
+                        handle_game_state(glob);
+                        break;
+                case WIN:
+                        handle_win_state(glob);
+                        break;
+                case LOSE:
+                        handle_lose_state(glob);
+                        break;
+                default:
+                        break;
+                }
+        }
+
+        handle_end_state(glob);
+
+        return;
+}
 
 /**
  * Return either win or lose state
  */
-int handle_game_state(GlobalState *glob) {
+void handle_game_state(GlobalState *glob) {
         assert(glob != NULL);
-        assert(glob->board != NULL);
 
         int ch = 0;
         int sel_x, sel_y;
         sel_x = sel_y = 0;
 
         int is_first_square = 1;
-        WINDOW *win = stdscr;
+        WINDOW *win = glob->win;
+        Board *board = &(glob->board);
 
-        while (ch != KEY_BACKSPACE) {
+        while (glob->current_state == GAME) {
                 wclear(win);
-                display_board_with_cursor(win, glob->board, sel_x, sel_y);
+                display_board_with_cursor(win, board, sel_x, sel_y);
                 wrefresh(win);
 
                 ch = getch();
@@ -44,16 +70,16 @@ int handle_game_state(GlobalState *glob) {
                         if (sel_x < 0)
                                 sel_x = 0;
 
-                        assert(sel_x >= 0 && sel_x < glob->board->n);
+                        assert(sel_x >= 0 && sel_x < board->n);
                         break;
                 case KEY_DOWN:
                 case 'j':
                 case 's':
                         sel_x++;
-                        if (sel_x >= glob->board->n)
-                                sel_x = glob->board->n - 1;
+                        if (sel_x >= glob->board.n)
+                                sel_x = glob->board.n - 1;
 
-                        assert(sel_x >= 0 && sel_x < glob->board->n);
+                        assert(sel_x >= 0 && sel_x < board->n);
                         break;
                 case KEY_LEFT:
                 case 'h':
@@ -62,75 +88,74 @@ int handle_game_state(GlobalState *glob) {
                         if (sel_y < 0) {
                                 sel_y = 0;
                         }
-                        assert(sel_y >= 0 && sel_y < glob->board->m);
+                        assert(sel_y >= 0 && sel_y < board->m);
                         break;
                 case KEY_RIGHT:
                 case 'l':
                 case 'd':
                         sel_y++;
-                        if (sel_y >= glob->board->m)
-                                sel_y = glob->board->m - 1;
+                        if (sel_y >= glob->board.m)
+                                sel_y = glob->board.m - 1;
 
-                        assert(sel_y >= 0 && sel_y < glob->board->m);
+                        assert(sel_y >= 0 && sel_y < board->m);
                         break;
                 case '\n':
                         // first click safety
                         // give player empty space on first click of board
                         // repeat until selected square has 0 mines surrounding
                         if (is_first_square == 1) {
-                                while (glob->board->numbered[sel_x][sel_y] != 0)
-                                        generate_mines(glob->board);
+                                while (board->numbered[sel_x][sel_y] != 0)
+                                        generate_mines(board);
 
                                 is_first_square = 0;
                         }
 
                         assert(is_first_square == 0);
-                        assert(glob->board->mines != NULL);
-                        assert(glob->board->numbered != NULL);
 
                         // chording
-                        if (glob->board->opened[sel_x][sel_y] == 1 &&
-                            glob->board->numbered[sel_x][sel_y] ==
-                                count_adjacent_flags(glob->board, sel_x,
-                                                     sel_y)) {
-                                open_adjacent_squares(glob->board, sel_x,
-                                                      sel_y);
+                        if (board->opened[sel_x][sel_y] == 1 &&
+                            board->numbered[sel_x][sel_y] ==
+                                count_adjacent_flags(board, sel_x, sel_y)) {
+                                open_adjacent_squares(board, sel_x, sel_y);
                         } else {
-                                open_square(glob->board, sel_x, sel_y);
+                                open_square(board, sel_x, sel_y);
                         }
 
-                        open_empty_squares(glob->board);
+                        open_empty_squares(board);
 
-                        int is_won = check_victory_condition(glob->board);
+                        int is_won = check_victory_condition(board);
 
                         if (is_won == 1) {
-                                return WIN;
+                                glob->current_state = WIN;
                         } else if (is_won == -1) {
-                                return LOSE;
+                                glob->current_state = LOSE;
                         }
                         break;
                 case ' ':
                 case 'f':
-                        flag_square(glob->board, sel_x, sel_y);
+                        flag_square(board, sel_x, sel_y);
+                        break;
+                case KEY_BACKSPACE:
+                        glob->current_state = END;
                         break;
                 default:
                         break;
                 }
         }
 
-        return END;
+        return;
 }
 
-int handle_menu_state(GlobalState *glob) {
+void handle_menu_state(GlobalState *glob) {
         assert(glob != NULL);
-        assert(glob->board != NULL);
 
         int ch = 0;
         int sel = 0;
 
-        WINDOW *win = stdscr;
+        WINDOW *win = glob->win;
+        Board *board = &(glob->board);
 
-        while (ch != KEY_BACKSPACE) {
+        while (glob->current_state == MENU) {
                 wclear(win);
                 display_menu_with_cursor(win, sel);
                 wrefresh(win);
@@ -153,30 +178,29 @@ int handle_menu_state(GlobalState *glob) {
                         // }
                         break;
                 case '\n':
-
-                        if (glob->board != NULL)
-                                free_board(glob->board);
-
                         switch (sel) {
                         case 0:
-                                glob->board = get_board_struct(9, 9, 10);
-                                return GAME;
+                                initialize_board_struct(board, 9, 9, 10);
+                                glob->current_state = GAME;
                                 break;
                         case 1:
-                                glob->board = get_board_struct(16, 16, 40);
-                                return GAME;
+                                initialize_board_struct(board, 16, 16, 40);
+                                glob->current_state = GAME;
                                 break;
                         case 2:
-                                glob->board = get_board_struct(16, 30, 99);
-                                return GAME;
+                                initialize_board_struct(board, 16, 30, 99);
+                                glob->current_state = GAME;
                                 break;
                         case 3:
-                                return END;
+                                glob->current_state = END;
                                 break;
                         default:
                                 break;
                         }
 
+                        break;
+                case KEY_BACKSPACE:
+                        glob->current_state = END;
                         break;
                 default:
                         break;
@@ -185,45 +209,46 @@ int handle_menu_state(GlobalState *glob) {
                       NUM_MENU_OPTIONS;
         }
 
-        return END;
+        return;
 }
 
-int handle_end_state(GlobalState *glob) {
-        assert(glob != NULL);
-        assert(glob->board != NULL);
-
-        free_board(glob->board);
-        free(glob);
-
-        return 0;
+void handle_end_state(GlobalState *glob) {
+        endwin();
+        return;
 }
 
-int handle_win_state(GlobalState *glob) {
+void handle_win_state(GlobalState *glob) {
         assert(glob != NULL);
-        assert(glob->board != NULL);
 
         WINDOW *win = stdscr;
+        Board *board = &(glob->board);
 
         wclear(win);
         wprintw(win, "You win!\n");
-        display_board_with_errors(win, glob->board);
+        display_board_with_errors(win, board);
         refresh();
         wrefresh(win);
         getch();
-        return MENU;
+
+        glob->current_state = MENU;
+
+        return;
 }
 
-int handle_lose_state(GlobalState *glob) {
+void handle_lose_state(GlobalState *glob) {
         assert(glob != NULL);
-        assert(glob->board != NULL);
 
         WINDOW *win = stdscr;
+        Board *board = &(glob->board);
 
         wclear(win);
         wprintw(win, "You lose...\n");
-        display_board_with_errors(win, glob->board);
+        display_board_with_errors(win, board);
         refresh();
         wrefresh(win);
         getch();
-        return MENU;
+
+        glob->current_state = MENU;
+
+        return;
 }
