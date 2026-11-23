@@ -36,7 +36,8 @@ void init_color_pairs() {
         init_pair(FOUR_COLOR, COLOR_MAGENTA, COLOR_BLACK);
         init_pair(FIVE_COLOR, COLOR_YELLOW, COLOR_BLACK);
         // using cyan for 6,7,8
-        // ncurses doesn't have enough colours and you never see these anyway
+        // ncurses doesn't have enough colours
+        // you almost never see these anyway
         init_pair(SIX_COLOR, COLOR_CYAN, COLOR_BLACK);
         init_pair(SEVEN_COLOR, COLOR_CYAN, COLOR_BLACK);
         init_pair(EIGHT_COLOR, COLOR_CYAN, COLOR_BLACK);

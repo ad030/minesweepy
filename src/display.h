@@ -61,7 +61,7 @@ void display_square_color(WINDOW *, Board *, int, int);
 void display_remaining_mine_count(WINDOW *, Board *);
 
 // ncurses windows
-WINDOW *create_window(WinStruct *);
-WinStruct *init_win_struct();
+// WINDOW *create_window(WinStruct *);
+// WinStruct *init_win_struct();
 
 #endif
