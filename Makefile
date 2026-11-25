@@ -1,23 +1,23 @@
-CFLAGS=-Wall -Wextra -pedantic -std=c99
-CC=gcc
-TARGET=mines.out
+CFLAGS:=-Wall -Wextra -pedantic -std=c99
+CPPFLAGS := -MMD -MP
+CC:=gcc
+TARGET:=mines.out
 
-SRC_DIR=src/
-BUILD_DIR=build/
+SRC_DIR:=src
+BUILD_DIR:=build
 
-SRCS=$(wildcard $(SRC_DIR)/*.c)
-OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+SRCS := $(shell find $(SRC_DIR) -name '*.c')
+OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+DEPS := $(OBJS:%.o=%.d)
 
-LDFLAGS=-lncurses
+LDLIBS=-lncurses
 
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o $@
+	$(CC) $^ $(LDLIBS) -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
-
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
